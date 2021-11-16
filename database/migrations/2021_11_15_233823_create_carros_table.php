@@ -15,7 +15,16 @@ class CreateCarrosTable extends Migration
     {
         Schema::create('carros', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->unsignedBigInteger('modelo_id');
+            $table->string('placa', 10)->unique();
+            $table->boolean('disponivel');
+            $table->integer('km');
+            
+            $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
+    
+            //foreign key (constraints)
+            $table->foreign('modelo_id')->references('id')->on('modelos');
         });
     }
 
@@ -25,7 +34,11 @@ class CreateCarrosTable extends Migration
      * @return void
      */
     public function down()
-    {
+    {   
+        Schema::table('carros', function (Blueprint $table) {
+            $table->dropForeign('carros_modelo_id_foreign');
+        });
+
         Schema::dropIfExists('carros');
     }
 }

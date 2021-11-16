@@ -15,7 +15,19 @@ class CreateModelosTable extends Migration
     {
         Schema::create('modelos', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->unsignedBigInteger('marca_id');
+            $table->string('nome', 30);
+            $table->string('imagem', 100);
+            $table->integer('numero_portas');
+            $table->integer('lugares');
+            $table->boolean('air_bag');
+            $table->boolean('abs');
+            
+            $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'));
+    
+            //foreign key (constraints)
+            $table->foreign('marca_id')->references('id')->on('marcas');
         });
     }
 
@@ -25,7 +37,12 @@ class CreateModelosTable extends Migration
      * @return void
      */
     public function down()
-    {
+    {   
+
+        Schema::table('modelos', function (Blueprint $table) {
+            $table->dropForeign('modelos_marca_id_foreign');
+        });
+
         Schema::dropIfExists('modelos');
     }
 }
