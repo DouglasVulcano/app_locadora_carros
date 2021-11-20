@@ -113,7 +113,19 @@ class MarcaController extends Controller
             $request->validate($this->marca->rules(), $this->marca->feedback());
         }
 
-        $marca->update($request->all());
+        $image = $request->file('imagem');
+
+        $image_urn = $image->store('imagens', 'public');
+
+        $marca->update([
+            'nome' => $request->nome,
+            'imagem' => $image_urn
+        ]);
+
+        /** Para atualização de imagens, é necessário adicionar o campo _method = PUT ou PATH
+         *  no front (Body do Insomnia), pois o Laravel é limitado para esse  tipo de atualização
+         */
+
         return response()->json($marca, 200);
     }
 
