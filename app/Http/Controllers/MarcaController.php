@@ -49,11 +49,12 @@ class MarcaController extends Controller
          * Por padrão o disco é setado para local
          */
 
-        $image->store('imagens', 'public');
+        $image_urn = $image->store('imagens', 'public');
 
-        dd('Upload de arquivos');
-
-        //$marca = $this->marca->create($request->all());
+        $marca = $this->marca->create([
+            'nome' => $request->nome,
+            'imagem' => $image_urn
+        ]);
         return response()->json($marca, 201);
     }
 
