@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Marca;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class MarcaController extends Controller
 {
@@ -113,6 +114,15 @@ class MarcaController extends Controller
             $request->validate($this->marca->rules(), $this->marca->feedback());
         }
 
+        /**
+         * Ao atualizar um registro, é necessário que a imagem anterior seja também
+         * deletada, para isso é necessário seguir o seguite código
+         */
+
+        if($request->file('imagem')) {
+            Storage::disk('public')->delete($marca->imagem);
+        }
+
         $image = $request->file('imagem');
 
         $image_urn = $image->store('imagens', 'public');
@@ -138,11 +148,17 @@ class MarcaController extends Controller
     public function destroy($id)
     {   
         $marca = $this->marca->find($id);
+
         if ($marca === null) {
             return response([
                 "error" => "This record can't be deleted."
             ], 404);
         }
+
+        /**
+         * Excluia a imagem
+         */
+        Storage::disk('public')->delete($marca->imagem);
 
         $marca->delete();
         return [
