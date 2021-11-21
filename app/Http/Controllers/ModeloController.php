@@ -13,10 +13,18 @@ class ModeloController extends Controller
     }
 
   
-    public function index()
-    {
-        $modelos = $this->modelo->with('marca')->get();
-        return response()->json($modelos);
+    public function index(Request $request)
+    {      
+        $modelos = array();
+
+        if($request->has('atributos')) {
+            $attributes = $request->atributos;
+            $modelos = $this->modelo->selectRaw($attributes)->with('marca')->get();
+        } else {
+            $modelos = $this->modelo->with('marca')->get();
+        }
+
+        return response()->json($modelos, 200);
     }
 
 
@@ -104,6 +112,6 @@ class ModeloController extends Controller
 
         Storage::disk('public')->delete($modelo->imagem);
         $modelo->delete();
-        return ['msg' => 'A marca foi deletada com sucesso!'];
+        return response(['msg' => 'A marca foi deletada com sucesso!']);
     }
 }
