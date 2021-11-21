@@ -15,8 +15,8 @@ class Marca extends Model
 
     public function rules() {
         return [
-            'nome' => 'required|unique:marcas,nome,'.$this->id,
-            'imagem' => 'required|file|mimes:png'
+            'nome'     => 'required|unique:marcas,nome,'.$this->id,
+            'imagem'   => 'required|file|mimes:png'
         ];
 
         /*
@@ -28,9 +28,17 @@ class Marca extends Model
 
     public function feedback() {
         return [
-            'required' => 'O campo :attribute é obrigatório',
-            'nome.unique' => 'O nome da marca já existe',
-            'imagem.mimes' => 'A imagem deve ser do tipo: .png'
+            'required'      => 'O campo :attribute é obrigatório',
+            'nome.unique'   => 'O nome da marca já existe',
+            'imagem.mimes'  => 'A imagem deve ser do tipo: .png'
         ];
+    }
+
+    public function modelos() {
+        /**
+         * Uma marca possui muitos modelos
+         */
+
+        return $this->hasMany('App\Models\Modelo');
     }
 }

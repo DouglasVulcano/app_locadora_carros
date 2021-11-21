@@ -21,7 +21,7 @@ class MarcaController extends Controller
     public function index()
     {   
         //$marcas = Marca::all();
-        $marcas = $this->marca->all();
+        $marcas = $this->marca->with('modelos')->get();
         return response()->json($marcas, 200);
     }
 
@@ -50,7 +50,7 @@ class MarcaController extends Controller
          * Por padrão o disco é setado para local
          */
 
-        $image_urn = $image->store('imagens', 'public');
+        $image_urn = $image->store('imagens/marcas', 'public');
 
         $marca = $this->marca->create([
             'nome' => $request->nome,
@@ -67,11 +67,9 @@ class MarcaController extends Controller
      */
     public function show($id)
     {   
-        $marca = $this->marca->find($id);
+        $marca = $this->marca->with('modelos')->find($id);
         if($marca === null) {
-            return response()->json([
-                'error' => "This register dont't exists."
-            ], 404);
+            return response()->json(['error' => "This register dont't exists." ], 404);
         }
         return response()->json($marca, 200);
     }
@@ -89,15 +87,12 @@ class MarcaController extends Controller
         $marca = $this->marca->find($id);
         
         if ($marca === null) {
-            return response([
-                'error' => "This register dont't exists."
-            ], 404);
+            return response(['error' => "This register dont't exists."], 404);
         }
 
         if ($request->method() == 'PATCH'){
 
             $dinamicRules = array();
-
 
             foreach($marca->rules() as $input => $rule) {
 
@@ -123,14 +118,29 @@ class MarcaController extends Controller
             Storage::disk('public')->delete($marca->imagem);
         }
 
+        if($request->file('imagem')) {
+            Storage::disk('public')->delete($modelo->imagem);
+        }
+
         $image = $request->file('imagem');
 
-        $image_urn = $image->store('imagens', 'public');
+        $image_urn = $image->store('imagens/marcas', 'public');
 
+        /** Preencher o objeto marca com os dados do request */
+        // dd($request->all());
+        // O método fill preenche o objeto possibilitando a atualização parcial
+        $marca->fill($request->all());
+        $marca->imagem = $image_urn;
+        $marca->save();
+        
+
+        /* Forma ineficiente de atualizar dados pelo método PATCH
+        dd($marca->getAttributes());
         $marca->update([
             'nome' => $request->nome,
             'imagem' => $image_urn
         ]);
+        */
 
         /** Para atualização de imagens, é necessário adicionar o campo _method = PUT ou PATH
          *  no front (Body do Insomnia), pois o Laravel é limitado para esse  tipo de atualização
@@ -150,20 +160,15 @@ class MarcaController extends Controller
         $marca = $this->marca->find($id);
 
         if ($marca === null) {
-            return response([
-                "error" => "This record can't be deleted."
-            ], 404);
+            return response()->json(["error" => "This record can't be deleted."], 404);
         }
 
         /**
          * Excluia a imagem
          */
         Storage::disk('public')->delete($marca->imagem);
-
         $marca->delete();
-        return [
-            'msg' => 'A marca foi deletada com sucesso!'
-        ];
+        return response()->json(['msg' => 'A marca foi deletada com sucesso!' ]);
     }
 }
  
